@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 2,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::teste edicao e exclusao com versao obsoleta pela factory real do repositorio testar somente sql manual nao detecta a remocao do filtro de versao no sdk",
+      "text": "Teste edição e exclusão com versão obsoleta pela factory real do repositório; testar somente SQL manual não detecta a remoção do filtro de versão no SDK.",
+      "signal": "surviving_mutant",
+      "scope": "catalog/concurrency",
+      "status": "candidate",
+      "features": [
+        "admin-catalog"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "security-validation.md:M10 (catalog/concurrency)"
+      ],
+      "created": "2026-09-06T00:05:50Z",
+      "last_seen": "2026-09-06T00:05:50Z"
+    }
+  ]
+}

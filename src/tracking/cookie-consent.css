@@ -1,0 +1,20 @@
+.rj-cookie { position: fixed; left: max(24px, env(safe-area-inset-left)); bottom: max(24px, env(safe-area-inset-bottom)); z-index: 30; width: min(440px, calc(100vw - 48px)); max-height: calc(100vh - 48px); overflow-y: auto; padding: 20px; border: 1px solid #005b3426; border-radius: 16px; background: #fff; color: #193e2d; box-shadow: 0 10px 32px #00361f33; font-size: 14px; line-height: 1.5; }
+.rj-cookie h2 { margin: 0 0 6px; font-size: 17px; color: var(--rj-green, #005b34); }
+.rj-cookie h2:focus { outline: none; }
+.rj-cookie p { margin: 0 0 14px; }
+.rj-cookie__options { display: grid; gap: 10px; margin: 0 0 14px; padding: 0; border: 0; }
+.rj-cookie__options legend { margin-bottom: 8px; font-weight: 600; }
+.rj-cookie__option { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: #f2f6ef; cursor: pointer; }
+.rj-cookie__option input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--rj-green, #005b34); flex: none; }
+.rj-cookie__option strong, .rj-cookie__option small { display: block; }
+.rj-cookie__option small { color: #3d5a4a; font-size: 12.5px; }
+.rj-cookie__actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.rj-cookie__button { min-height: 44px; padding: 10px 12px; border: 1.5px solid var(--rj-green, #005b34); border-radius: 10px; background: var(--rj-green, #005b34); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.rj-cookie__button:hover { background: #00472a; }
+.rj-cookie__button:focus-visible, .rj-cookie__link:focus-visible { outline: 3px solid #78b54d; outline-offset: 2px; }
+.rj-cookie__link { margin-top: 12px; padding: 4px 0; border: 0; background: none; color: var(--rj-green, #005b34); font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; }
+@media (max-width: 640px) {
+  .rj-cookie { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; padding: 16px; }
+  .rj-cookie__actions { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .rj-cookie__button { padding: 8px 6px; font-size: 13px; line-height: 1.2; }
+}

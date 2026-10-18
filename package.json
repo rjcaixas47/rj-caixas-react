@@ -1,0 +1,23 @@
+{
+  "name": "rj-caixas-react",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "verify": "npm test && npm run build",
+    "test": "node --test tests/model.test.js tests/repository.test.js tests/tracking.test.js",
+    "test:db": "node --test tests/database.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.115.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "simple-icons": "16.29.0"
+  },
+  "devDependencies": {
+    "vite": "8.2.2"
+  }
+}
