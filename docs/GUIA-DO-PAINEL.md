@@ -1,6 +1,6 @@
 # Como cuidar da loja RJ Caixas
 
-Abra `/admin` e entre com o email e a senha recebidos da pessoa responsável pelo site. Se aparecer “Seu painel está quase pronto”, essa pessoa precisa concluir a ativação antes de você começar.
+Abra [o painel da RJ Caixas](https://rj-caixas-pied.vercel.app/admin) e entre com `rjcaixas47@gmail.com` e a senha definida pelo responsável. O acesso administrativo está ativo. Se o endereço da loja mudar, o painel continuará em `/admin` no novo endereço.
 
 ## Adicionar um produto
 

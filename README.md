@@ -99,7 +99,9 @@ npm run preview -- --port 4173
 
 `verify` roda os 19 testes de validação e o build. `test:db` executa as migrations e 5 testes de permissões em PostgreSQL temporário via PGlite, em memória, sem banco remoto. `test:db:postgres` mantém o roteiro original para um PostgreSQL instalado, com `PG_BIN` apontando para seus binários. `test:browser` usa Chrome/Edge e API simulada; cobre login, salvar/recarregar, erros, pausar, HTML, consentimento, revogação, conversões, isolamento e logout em 1440/390. As capturas e `resultado.json` ficam em `output/tracking/`.
 
-Na Vercel, o projeto confirmado é `b57bdfd9-ac23-412d-b09d-1537e1beeca0` (`prj_m1s6gom7nRgTs8ncJJ0fCmsWvt0C`), da equipe `team_ncMJZtGdUvp9d9AiSCgWnPCg`, com preset Vite. Conferir as duas variáveis públicas antes de um novo build. `vercel.json` inclui rotas SPA e cabeçalhos; um domínio Supabase personalizado requer ajuste do `connect-src` no CSP. A ativação remota e a publicação desta atualização continuam pendentes.
+O destino novo na Vercel é `rj-caixas` (`prj_8xlM8KcOO8xJMqx5RJ6tYWxsIpRi`), da equipe RJ Caixas (`team_fcQFYgUFEOU5ptCQMGbD7QHN`, slug `rj-caixas`), com preset Vite, `npm ci`, `npm run build` e saída `dist`. As duas variáveis públicas foram configuradas em Production, Preview e Development, e a cópia de Preview foi conferida. `vercel.json` inclui rotas SPA e cabeçalhos; um domínio Supabase personalizado requer ajuste do `connect-src` no CSP. O projeto antigo `b57bdfd9-ac23-412d-b09d-1537e1beeca0` é apenas a origem da migração e não deve receber esta publicação.
+
+Endereço novo: `https://rj-caixas-pied.vercel.app`; painel: `/admin`. O primeiro deploy, `dpl_3XB2PZ8T4T4pH8UqSncTQKbtttac`, foi classificado automaticamente como Production pela Vercel, embora o comando não tenha usado `--prod`. Nenhum domínio da loja antiga foi transferido. O build remoto passou; `/`, `/admin`, `/tracking-sandbox.html` e `/tracking-sandbox.js` retornaram HTTP 200 com conteúdo e CSP esperados, inclusive a permissão de iframe exclusiva do sandbox.
 
 ### Segurança e operação
 
@@ -115,11 +117,19 @@ O estado recuperado antes da retomada permanece em `C:/Users/Altamir da Luz/Site
 
 ### Ponto de continuidade — 19/10/2026
 
-O responsável criou o e-mail `rjcaixas47@gmail.com` para o cliente e decidiu usar novas contas de Vercel e Supabase sob controle dele. Os formulários de cadastro foram abertos com esse endereço, mas a criação das contas, confirmação do e-mail e definição da senha no Supabase ainda dependem do responsável. Não criar o projeto na organização Grupo W3 nem conectar a conta do cliente ao W3 Geral. O projeto Vercel antigo foi identificado apenas como origem da migração e continua sem variáveis de ambiente.
+As novas contas do cliente usam `rjcaixas47@gmail.com`. O código foi enviado ao repositório privado `https://github.com/rjcaixas47/rj-caixas-react`, branch `main`. No checkout recuperado, o remoto `cliente` aponta para esse repositório; `origin` ainda identifica o repositório antigo da empresa. As autenticações das CLIs estão isoladas em `output/credenciais-cli/`, fora do Git e do deploy. Não publicar essa pasta nem arquivos de ambiente.
 
-A implementação local foi retomada após o fechamento do editor. Foram corrigidos o host/origem da API simulada e o seletor da aba com contagem no teste de navegador. Confirmados: 19 testes de lógica, 5 testes SQL em banco temporário, build e roteiro completo no Chrome em 1440/390, sem erros de JavaScript. Os serviços externos de anúncios foram simulados; autenticação e persistência em Supabase gerenciado, recebimento real de eventos e publicação continuam pendentes.
+Supabase exclusivo: organização RJ Caixas (`dyfxnqlyffjovgqffbmy`), projeto `rj-caixas` (`gjwzhmzxsapyuqjkohgx`), plano Free e região São Paulo. As três migrations foram aplicadas pelo SQL Editor, com seis tabelas protegidas por RLS. O catálogo recuperado foi importado sem sobrescrever registros: 40 produtos, 6 categorias e 4 banners. A API real confirmou leitura pública do catálogo e rejeição de leitura de perfis/gravação de rastreamento sem autenticação. Não conectar o cliente ao W3 Geral nem alterar os serviços antigos da empresa.
 
-Próxima etapa: acessar as contas novas do cliente, confirmar o projeto exclusivo e seu custo antes de criar, aplicar as três migrations, criar o administrador com perfil ativo, importar o conteúdo conferido da loja, configurar as variáveis públicas e testar em preview antes da migração de produção. Preservar a loja existente até a validação do novo destino.
+A implementação local foi retomada após o fechamento do editor. Foram corrigidos o host/origem da API simulada e o seletor da aba com contagem no teste de navegador. Confirmados: 19 testes de lógica, 5 testes SQL em banco temporário, build e roteiro completo no Chrome em 1440/390, sem erros de JavaScript. A vitrine também foi aberta com o banco real, sem erros de JavaScript. Os serviços externos de anúncios foram simulados; o recebimento real de eventos depende dos IDs do cliente.
+
+O usuário do painel `rjcaixas47@gmail.com` foi criado e confirmado pelo responsável. Seu perfil administrativo foi ativado com autorização e conferido no banco. Cadastros públicos foram desabilitados, o login por email continua ativo e o Site URL aponta para o endereço Vercel novo. A API confirmou essas configurações e repetiu com sucesso as verificações de leitura do catálogo e bloqueio de operações anônimas.
+
+Próxima etapa: o responsável entrar na aba do painel com sua senha para verificar salvamento e recarga no Supabase real. Essa verificação autenticada e o upload real ainda não foram concluídos; os testes anteriores desses fluxos usaram API simulada. Não registrar senhas nem copiar a sessão do navegador para scripts.
+
+O Security Advisor indicou 0 erros e 5 avisos: execução de funções SECURITY DEFINER por visitantes/autenticados (`rj_is_admin` e `rls_auto_enable`) e proteção contra senhas vazadas desativada. `rj_is_admin` usa `auth.uid()`, caminho de busca vazio e retorna apenas o estado administrativo do próprio usuário; ela é utilizada pelas políticas de leitura e escrita. `rls_auto_enable` foi criada pela configuração de RLS automático do projeto. Não alterar permissões dessas funções sem validar as políticas e o mecanismo da plataforma.
+
+A equipe Vercel nova está no plano Hobby. A documentação consultada em 19/10/2026 restringe Hobby a uso pessoal não comercial; Pro começa em US$ 20/mês, além de uso/impostos aplicáveis. Decidir o plano/destino antes de divulgar a loja para uso comercial. Nenhuma assinatura paga foi contratada. Preservar a loja existente até a validação do novo destino.
 
 ### Resultado da validação do admin
 
