@@ -115,7 +115,7 @@ O estado recuperado antes da retomada permanece em `C:/Users/Altamir da Luz/Site
 
 ### Ponto de continuidade — 19/10/2026
 
-O responsável decidiu criar um e-mail para o cliente e usar novas contas de Vercel e Supabase sob controle dele. Aguardar esse endereço para provisionar e configurar o destino; não criar o projeto na organização Grupo W3 nem conectar a conta do cliente ao W3 Geral. O projeto Vercel antigo foi identificado apenas como origem da migração e continua sem variáveis de ambiente.
+O responsável criou o e-mail `rjcaixas47@gmail.com` para o cliente e decidiu usar novas contas de Vercel e Supabase sob controle dele. Os formulários de cadastro foram abertos com esse endereço, mas a criação das contas, confirmação do e-mail e definição da senha no Supabase ainda dependem do responsável. Não criar o projeto na organização Grupo W3 nem conectar a conta do cliente ao W3 Geral. O projeto Vercel antigo foi identificado apenas como origem da migração e continua sem variáveis de ambiente.
 
 A implementação local foi retomada após o fechamento do editor. Foram corrigidos o host/origem da API simulada e o seletor da aba com contagem no teste de navegador. Confirmados: 19 testes de lógica, 5 testes SQL em banco temporário, build e roteiro completo no Chrome em 1440/390, sem erros de JavaScript. Os serviços externos de anúncios foram simulados; autenticação e persistência em Supabase gerenciado, recebimento real de eventos e publicação continuam pendentes.
 
