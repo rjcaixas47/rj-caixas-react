@@ -2,6 +2,7 @@
 // Nada carrega antes do consentimento (RGPD/LGPD). Consent Mode v2 começa negado e é
 // atualizado com a escolha do visitante. Os scripts são criados por este módulo, sem
 // HTML ou script inline vindo do banco, para manter a CSP do vercel.json.
+import {applyCustomCodes, hasCustomCodes} from './custom.js';
 const CONSENT_KEY = 'rj-consent';
 const CONSENT_VERSION = 1;
 
@@ -22,10 +23,16 @@ export function needsPrompt(saved, categories) {
   return !saved || ['analytics', 'marketing'].some(key => categories[key] && !saved.offered?.[key]);
 }
 export function trackingCategories(ids) {
-  return {analytics: Boolean(ids.gtm_id || ids.ga4_id), marketing: Boolean(ids.gtm_id || ids.google_ads_id || ids.meta_pixel_id)};
+  const active = activeTracking(ids);
+  const codes = ids.options?.custom_codes || [];
+  return {analytics: Boolean(active.gtm_id || active.ga4_id || codes.some(c => c.enabled && c.category === 'analytics')), marketing: Boolean(active.gtm_id || active.google_ads_id || active.meta_pixel_id || codes.some(c => c.enabled && c.category === 'marketing'))};
+}
+export function activeTracking(ids) {
+ return Object.fromEntries(Object.entries(ids).map(([key,value]) => [key, ids.options?.disabled?.includes(key) ? '' : value]));
 }
 // O GTM carrega com qualquer categoria aceita; dentro dele, as tags do Google respeitam o Consent Mode.
 export function tagPlan(ids, consent) {
+  ids = activeTracking(ids);
   return {
     gtm: ids.gtm_id && (consent.analytics || consent.marketing) ? ids.gtm_id : '',
     gtag: [consent.analytics && ids.ga4_id, consent.marketing && ids.google_ads_id].filter(Boolean),
@@ -38,7 +45,7 @@ export function consentMode({analytics, marketing}) {
 }
 
 const loaded = {consent: false, gtm: false, gtag: false, configured: new Set(), pixel: false};
-export const hasLoadedTags = () => loaded.gtm || loaded.gtag || loaded.pixel;
+export const hasLoadedTags = () => loaded.gtm || loaded.gtag || loaded.pixel || hasCustomCodes();
 
 function addScript(src) {
   const script = document.createElement('script');
@@ -81,4 +88,15 @@ export function applyConsent(ids, consent) {
   for (const id of plan.gtag) if (!loaded.configured.has(id)) { loaded.configured.add(id); window.gtag('config', id); }
   if (plan.pixel && !loaded.pixel) { loaded.pixel = true; loadPixel(plan.pixel); }
   else if (window.fbq) window.fbq('consent', consent.marketing ? 'grant' : 'revoke');
+  applyCustomCodes(ids.options?.custom_codes, consent);
+  window.dispatchEvent(new CustomEvent('rj-tracking-status', {detail:{plan, consent}}));
+}
+
+// Um clique de contato não é uma venda nem um lead confirmado.
+export function trackWhatsApp(ids, consent) {
+ const active = activeTracking(ids);
+ if (active.gtm_id && (consent.analytics || consent.marketing)) window.dataLayer?.push({event:'whatsapp_click'});
+ if (consent.analytics && active.ga4_id) window.gtag?.('event', 'whatsapp_click', {send_to:active.ga4_id, transport_type:'beacon'});
+ if (consent.marketing && active.google_ads_id && ids.options?.google_ads_label) window.gtag?.('event', 'conversion', {send_to:`${active.google_ads_id}/${ids.options.google_ads_label}`, transport_type:'beacon'});
+ if (consent.marketing && active.meta_pixel_id) window.fbq?.('track', 'Contact');
 }

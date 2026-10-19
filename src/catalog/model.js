@@ -49,7 +49,7 @@ export function validateRecord(kind,input) {
  if(kind==='banners')Object.assign(row,{mobile_image:safeUrl(input.mobile_image),href:safeUrl(input.href),active:boolean(input.active,true)});
  return row;
 }
-// IDs públicos de rastreamento. Só formatos fixos: o site monta as tags, nunca HTML vindo do banco.
+// IDs públicos. Os snippets oficiais são convertidos em IDs, nunca executados no painel.
 export const trackingFields = {
  gtm_id:{label:'Google Tag Manager', example:'GTM-ABC1234', pattern:/^GTM-[A-Z0-9]{4,12}$/},
  ga4_id:{label:'Google Analytics 4', example:'G-AB12CD34EF', pattern:/^G-[A-Z0-9]{4,16}$/},
@@ -69,11 +69,37 @@ export function trackingError(key,value) {
 }
 export function validateTracking(input) {
  if (!input || typeof input!=='object'||Array.isArray(input))throw Error('Dados inválidos.');
- return Object.fromEntries(Object.keys(trackingFields).map(key=>{
+ const result = Object.fromEntries(Object.keys(trackingFields).map(key=>{
   const message=trackingError(key,input[key]);
   if(message)throw Error(message);
   return [key,trackingValue(key,input[key])];
  }));
+ if (input.options !== undefined) result.options = validateTrackingOptions(input.options);
+ return result;
+}
+export function validateTrackingOptions(input = {}) {
+ if (!input || typeof input !== 'object' || Array.isArray(input)) throw Error('Opções de rastreamento inválidas.');
+ const disabled = input.disabled ?? [];
+ if (!Array.isArray(disabled) || disabled.some(key => !Object.hasOwn(trackingFields, key))) throw Error('Integração inválida.');
+ const label = text(input.google_ads_label, 'Rótulo da conversão', 100);
+ if (label && !/^[A-Za-z0-9_-]{1,100}$/.test(label)) throw Error('Rótulo da conversão: copie apenas o trecho depois da barra em AW-123456789/Rotulo.');
+ const codes = input.custom_codes ?? [];
+ if (!Array.isArray(codes) || codes.length > 10) throw Error('Adicione no máximo 10 códigos personalizados.');
+ const ids = new Set();
+ const custom_codes = codes.map(item => {
+  if (!item || typeof item !== 'object') throw Error('Código personalizado inválido.');
+  const id = text(item.id, 'Identificador do código', 100, true);
+  if (!/^[A-Za-z0-9_-]+$/.test(id) || ids.has(id)) throw Error('Identificador do código inválido ou repetido.');
+  ids.add(id);
+  return {id, name:text(item.name, 'Nome do código', 100, true), code:text(item.code, 'HTML personalizado', 12000, true), category:choice(item.category, ['analytics','marketing'], 'Categoria de consentimento'), enabled:boolean(item.enabled, true)};
+ });
+ const verification = {};
+ for (const key of ['google','meta']) {
+  const token = text(input.verification?.[key], 'Código de verificação do domínio', 200);
+  if (token && !/^[A-Za-z0-9_-]+$/.test(token)) throw Error('Cole somente o conteúdo da tag de verificação do domínio.');
+  verification[key] = token;
+ }
+ return {disabled:[...new Set(disabled)], google_ads_label:label, custom_codes, verification};
 }
 export function whatsappLink(settings,productName) {
  const raw=settings.whatsapp_url;const url=new URL(raw);

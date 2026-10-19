@@ -4,6 +4,7 @@ export function readableError(error) {
  if(error?.code==='23505')return 'Este registro já existe. Atualize a lista antes de tentar novamente.';
  if(error?.code==='42501')return 'Sem permissão para salvar. Entre novamente com um administrador ativo.';
  if(error?.code==='23514')return 'Confira os campos: algum valor não é permitido pelo banco.';
+ if(error?.code==='PGRST204')return 'A atualização dos códigos personalizados ainda precisa ser aplicada no banco pela equipe responsável pelo site.';
  if(['PGRST205','42P01'].includes(error?.code))return 'O banco ainda não está configurado para o catálogo RJ.';
  return error?.message||'Não foi possível concluir. Tente novamente.';
 }
@@ -36,10 +37,10 @@ export function createRepository(client, seed) {
   async loadTracking(){
    requireClient();
    const keys=Object.keys(trackingFields);
-   const result=await client.from('rj_tracking').select([...keys,'version'].join(',')).eq('id','site').maybeSingle();
+   const result=await client.from('rj_tracking').select('*').eq('id','site').maybeSingle();
    if(['PGRST205','42P01'].includes(result.error?.code))throw Error('O rastreamento ainda não foi ativado no banco. Peça à equipe responsável pelo site para aplicar a atualização.');
    const record=check(result);
-   return {data:Object.fromEntries(keys.map(key=>[key,record?.[key]||''])),version:record?.version??null};
+   return {data:{...Object.fromEntries(keys.map(key=>[key,record?.[key]||''])),...(record?.options ? {options:record.options} : {})},version:record?.version??null};
   },
   async remove(kind,record){
    requireClient();if(!['products','categories','banners'].includes(kind))throw Error('Exclusão não permitida.');

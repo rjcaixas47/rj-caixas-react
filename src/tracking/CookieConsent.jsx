@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {configured, publicRepository} from '../catalog/repository.js';
-import {applyConsent, hasLoadedTags, needsPrompt, readConsent, storeConsent, trackingCategories} from './tags.js';
+import {applyConsent, hasLoadedTags, needsPrompt, readConsent, storeConsent, trackingCategories, trackWhatsApp} from './tags.js';
+import {applyVerification} from './custom.js';
 import './cookie-consent.css';
 
 const none = {analytics: false, marketing: false};
@@ -15,20 +16,33 @@ export default function CookieConsent() {
   const [open, setOpen] = useState(false), [custom, setCustom] = useState(false);
   const [choice, setChoice] = useState(none);
   const heading = useRef(null), focusOnOpen = useRef(false);
+  const consentRef = useRef(none);
   useEffect(() => {
     if (!configured) return;
     let alive = true;
     publicRepository.loadTracking().then(({data}) => {
       if (!alive) return;
+      applyVerification(data.options?.verification);
+      setIds(data);
       const categories = trackingCategories(data);
       if (!categories.analytics && !categories.marketing) return;
-      setIds(data);
       const saved = readConsent();
-      if (saved) { setChoice(saved); applyConsent(data, saved); }
+      if (saved) { setChoice(saved); consentRef.current = saved; applyConsent(data, saved); }
       if (needsPrompt(saved, categories)) setOpen(true);
     }).catch(() => { /* Sem rastreamento configurado, a loja funciona sem tags. */ });
     return () => { alive = false; };
   }, []);
+  useEffect(() => {
+    const contact = event => {
+      const anchor = event.target.closest?.('a[href]');
+      if (!ids || !anchor || event.defaultPrevented) return;
+      const url = new URL(anchor.href);
+      if (!['wa.me','api.whatsapp.com','web.whatsapp.com'].includes(url.hostname)) return;
+      trackWhatsApp(ids, consentRef.current);
+    };
+    document.addEventListener('click', contact);
+    return () => document.removeEventListener('click', contact);
+  }, [ids]);
   useEffect(() => {
     const reopen = event => {
       if (!event.target.closest?.('a[href="#preferencias-cookies"]')) return;
@@ -40,7 +54,8 @@ export default function CookieConsent() {
   }, []);
   useEffect(() => { if (open && focusOnOpen.current) { focusOnOpen.current = false; heading.current?.focus(); } }, [open]);
   function decide(next) {
-    const previous = readConsent();
+    const previous = consentRef.current;
+    consentRef.current = next;
     storeConsent(next, ids ? trackingCategories(ids) : none); setChoice(next); setOpen(false); setCustom(false);
     // Scripts já carregados não podem ser removidos: ao retirar uma permissão, a página recarrega sem eles.
     if (previous && hasLoadedTags() && ((previous.analytics && !next.analytics) || (previous.marketing && !next.marketing))) { window.location.reload(); return; }

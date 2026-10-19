@@ -8,8 +8,10 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "verify": "npm test && npm run build",
-    "test": "node --test tests/model.test.js tests/repository.test.js tests/tracking.test.js",
-    "test:db": "node --test tests/database.test.js"
+    "test": "node --test tests/model.test.js tests/repository.test.js tests/tracking.test.js tests/tracking-options.test.js",
+    "test:db": "node --test tests/tracking-database.test.js",
+    "test:db:postgres": "node --test tests/database.test.js",
+    "test:browser": "node tests/tracking-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.115.0",
@@ -18,6 +20,8 @@
     "simple-icons": "16.29.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.10",
+    "playwright-core": "1.62.1",
     "vite": "8.2.2"
   }
 }

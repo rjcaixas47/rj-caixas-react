@@ -41,14 +41,20 @@ Você pode trocar de grupo sem perder os campos preenchidos. **Salvar configura�
 
 ## Ligar o Google e a Meta (Rastreamento)
 
-Em **Rastreamento**, cole apenas o código (ID) de cada ferramenta que você usa e clique em **Salvar rastreamento**:
+Em **Rastreamento → Integrações**, informe o ID de cada ferramenta. Você também pode usar **Colar código de instalação → Identificar e preencher** para importar os IDs de um trecho oficial. Confira os valores e clique em **Salvar rastreamento**:
 
 - **Google Tag Manager:** começa com `GTM-`.
 - **Google Analytics 4:** começa com `G-`.
 - **Google Ads:** começa com `AW-`.
 - **Pixel da Meta:** só números (15 ou 16).
 
-Deixe vazio o que não usa. Se usar o Google Tag Manager, o ideal é preencher só ele e configurar o resto dentro do GTM com os modelos oficiais; preencher os dois conta as visitas em dobro. Tags de “HTML personalizado” no GTM não funcionam, por segurança do site.
+Deixe vazio o que não usa. O botão **Ativado/Pausado** permite desligar uma integração sem apagar seu ID. Use o ID numérico do Pixel, nunca o token privado da API de Conversões. Se configurar a mesma ferramenta no GTM e diretamente no painel, pode duplicar eventos. No GTM, prefira os modelos oficiais e configure o consentimento de cada tag; scripts inline na página principal continuam bloqueados.
+
+No Google Ads, o campo **Rótulo da conversão de WhatsApp** recebe o trecho depois da barra: em `AW-123456789/AbC_deF`, informe `AbC_deF`. Sem rótulo, a tag carrega, mas essa conversão não é enviada. Cliques nos botões de WhatsApp enviam `Contact` à Meta e `whatsapp_click` ao Analytics/GTM conforme as integrações e o consentimento. O clique não comprova envio de mensagem ou venda.
+
+Em **HTML personalizado**, adicione um nome, o código e a categoria **Análise** ou **Marketing**. Você pode pausar, editar e remover cada código; são aceitos até 10, com 12.000 caracteres cada. Eles executam em uma área isolada após consentimento, sem acesso aos cookies, conteúdo ou sessão da página principal. Ferramentas que precisam desse acesso devem usar a integração oficial ou GTM. Esses códigos são públicos: nunca inclua senhas ou tokens privados. Salve após qualquer alteração.
+
+**Verificar configuração** confere os formatos dos campos; o estado **Configurado** indica preenchimento e não confirma recebimento dos eventos. A aba **Como testar** explica a conferência nas plataformas.
 
 A loja mostra um aviso de cookies e as ferramentas só funcionam para quem aceitar. Para conferir, abra a loja em uma janela anônima, aceite os cookies e use o Tag Assistant (Google) ou o Meta Pixel Helper. Lembre-se de mencionar o uso de cookies na **Política de privacidade**, em Configurações → Informações da loja.
 

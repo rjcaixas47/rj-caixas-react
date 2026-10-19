@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {formatPrice, parsePrice, priceInput, settingsFields, safeUrl, trackingFields, trackingError} from '../catalog/model.js';
+import {formatPrice, parsePrice, priceInput, settingsFields, safeUrl} from '../catalog/model.js';
 import {Field, MediaField, ErrorNotice} from './ui.jsx';
 const singular = {products:'produto', categories:'categoria', banners:'banner'};
 
@@ -93,42 +93,5 @@ export function SettingsEditor({data, version, onSave, onDirty, dirty, onWorking
       {groups[group][2].map(key => ['logo','payment_image'].includes(key) ? <MediaField key={key} label={settingsFields[key]} value={form[key]} onChange={v => set(key, v)} onBusy={uploadingChanged} onError={setError}/> : <Field key={key} label={settingsFields[key]} hint={hints[key]}>{longFields.includes(key) ? <textarea rows={4} value={form[key] || ''} onChange={e => set(key, e.target.value)}/> : <input value={form[key] || ''} onChange={e => set(key, e.target.value)}/>}</Field>)}
     </div></section></fieldset>
     <div className="rj-admin-savebar"><span className={dirty ? 'has-changes' : ''}>{dirty ? 'Você tem alterações para salvar' : 'Nenhuma alteração pendente'}<small>Pode trocar de grupo. Os campos preenchidos continuam aqui.</small></span><button className="rj-admin-primary" disabled={busy || uploading || (Boolean(version) && !dirty)}>{busy ? 'Salvando…' : uploading ? 'Enviando imagem…' : 'Salvar configurações'}</button></div>
-  </form>;
-}
-
-const trackingHints = {
-  gtm_id: 'No Google Tag Manager, aparece no topo da tela, ao lado do nome do contêiner.',
-  ga4_id: 'No Google Analytics: Administrador → Fluxos de dados → seu site → ID da métrica.',
-  google_ads_id: 'No Google Ads, aparece na Tag do Google da conta ou na instalação de uma conversão. Começa com AW-.',
-  meta_pixel_id: 'No Gerenciador de Eventos da Meta, abaixo do nome do Pixel (conjunto de dados).',
-};
-export function TrackingEditor({tracking, onSave, onDirty, dirty, onWorking}) {
-  const [form, setForm] = useState(tracking.data || {});
-  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [invalid, setInvalid] = useState([]);
-  if (tracking.error) return <ErrorNotice message={tracking.error} hint="As outras áreas do painel continuam funcionando normalmente."/>;
-  const set = (key, value) => {onDirty(); setForm(old => ({...old, [key]:value})); setInvalid(old => old.filter(item => item !== key));};
-  const withGtm = Boolean(form.gtm_id?.trim()) && ['ga4_id','google_ads_id','meta_pixel_id'].some(key => form[key]?.trim());
-  async function submit(event) {
-    event.preventDefault(); setError('');
-    const wrong = Object.keys(trackingFields).filter(key => trackingError(key, form[key]));
-    if (wrong.length) {setInvalid(wrong); setError(wrong.map(key => trackingError(key, form[key])).join(' ')); return;}
-    setBusy(true); onWorking(true);
-    try {await onSave({data:form, version:tracking.version});}
-    catch(err) {setError(err.message);}
-    finally {setBusy(false); onWorking(false);}
-  }
-  return <form onSubmit={submit}>
-    <ErrorNotice message={error}/>
-    <section className="rj-admin-card rj-admin-settings-panel"><h2>Como funciona</h2>
-      <p>Cole aqui só o código (ID) de cada ferramenta. O site instala as tags sozinho. Deixe vazio o que você não usa: campo vazio não carrega nada.</p>
-      <p>Para respeitar a lei de proteção de dados (RGPD/LGPD), a loja mostra um aviso de cookies. As tags só funcionam para quem aceitar.</p>
-      <p><strong>Usa o Google Tag Manager?</strong> Então preencha só o GTM e configure o Analytics, o Google Ads e o Pixel dentro dele, com os modelos oficiais. Tags de “HTML personalizado” são bloqueadas pela proteção do site.</p>
-    </section>
-    <fieldset disabled={busy}><section className="rj-admin-card rj-admin-settings-panel"><h2>Códigos das ferramentas</h2><div className="rj-admin-settings-fields">
-      {Object.entries(trackingFields).map(([key, {label, example}]) => <Field key={key} label={label} hint={`${trackingHints[key]} Ex.: ${example}`} value={form[key] || ''} placeholder="Deixe vazio se não usar" autoComplete="off" spellCheck={false} aria-invalid={invalid.includes(key) || undefined} onChange={e => set(key, e.target.value)}/>)}
-    </div>
-    {withGtm && <div className="rj-admin-inline-tip" role="note">Você preencheu o Google Tag Manager e outros códigos. Se essas ferramentas também estiverem configuradas dentro do GTM, as visitas serão contadas em dobro. O ideal é deixar só o GTM.</div>}
-    </section></fieldset>
-    <div className="rj-admin-savebar"><span className={dirty ? 'has-changes' : ''}>{dirty ? 'Você tem alterações para salvar' : 'Nenhuma alteração pendente'}<small>Depois de salvar, abra a loja, aceite os cookies e confira com o Tag Assistant ou o Meta Pixel Helper.</small></span><button className="rj-admin-primary" disabled={busy || (Boolean(tracking.version) && !dirty)}>{busy ? 'Salvando…' : 'Salvar rastreamento'}</button></div>
   </form>;
 }

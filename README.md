@@ -5,7 +5,7 @@ Base do Open Design convertida em React + Vite, preservando o CSS, fontes, cards
 ## Executar
 
 ```bash
-cd '/Users/vitormiguelgoedertdaluz/Projetos/Open-design/b57bdfd9-ac23-412d-b09d-1537e1beeca0'
+cd 'C:/Users/Altamir da Luz/OneDrive/Área de Trabalho/zed.codes/sites/rj-caixas-react'
 npm ci # necessário apenas se node_modules não estiver instalado
 npm run dev -- --port 5173
 ```
@@ -60,7 +60,7 @@ Adaptado do repositório `Greed9797/lp-originally`, commit `de972def0ba34b8acb82
 
 ### Conectar um Supabase da RJ
 
-1. No projeto Supabase escolhido, aplicar **somente** as migrations deste repositório, nesta ordem: `supabase/migrations/202609050001_rj_catalog.sql` (tabelas `rj_*`, regras RLS e bucket `rj-media`) e `supabase/migrations/202610160001_rj_tracking.sql` (tabela `rj_tracking` da aba Rastreamento). Nunca executar no banco Originally sem revisar o destino e autorizar essa alteração.
+1. Usar um projeto Supabase exclusivo da RJ. Aplicar **somente** as migrations deste repositório, nesta ordem: `202609050001_rj_catalog.sql` (tabelas `rj_*`, regras RLS e bucket `rj-media`), `202610160001_rj_tracking.sql` (tabela `rj_tracking`) e `20261019130129_rj_tracking_options.sql` (opções, HTML e validação). Os arquivos estão em `supabase/migrations/`. O banco compartilhado W3 Geral não é um destino aprovado: uma política existente permite a qualquer usuário autenticado ler anexos internos. Não criar a conta do cliente nele nem alterar políticas de outros sistemas.
 2. Copiar `.env.example` para `.env.local` e preencher `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` com a URL e chave publicável/anon desse projeto. Nunca usar `service_role` ou `sb_secret_` no Vite.
 3. Criar o usuário administrativo pelo painel Supabase → Authentication → Users. Definir a senha por canal seguro. Desabilitar cadastro público se o projeto for dedicado à RJ.
 4. Atribuir o UUID desse usuário no SQL Editor:
@@ -74,12 +74,14 @@ values ('UUID-DO-USUARIO-CRIADO', true);
 
 Na Vercel, as mesmas duas variáveis `VITE_*` precisam estar em Production (e Preview, se quiser testar lá). Elas entram no build: depois de criar ou mudar, é preciso publicar de novo.
 
-### Rastreamento (GTM, GA4, Google Ads e Pixel da Meta) — 16/10/2026
+### Rastreamento (GTM, GA4, Google Ads e Pixel da Meta) — 19/10/2026
 
 Aba **Rastreamento** no `/admin` para o cliente colar os IDs sozinho. Guia de uso em `docs/GUIA-DO-PAINEL.md`.
 
-- Banco: tabela `rj_tracking` (linha única `site`) com `gtm_id`, `ga4_id`, `google_ads_id` e `meta_pixel_id`. O `CHECK` aceita só os formatos `GTM-…`, `G-…`, `AW-…` e 15 a 16 dígitos, ou vazio. Leitura pública (os IDs aparecem no navegador de qualquer forma), gravação só para admin ativo, sem exclusão. A versão numérica impede sobrescrever edição concorrente, como nas outras tabelas.
-- Sem HTML livre: o site monta as tags a partir dos IDs (`src/tracking/tags.js`). Não há campo de script personalizado, por decisão de segurança.
+- Banco: tabela `rj_tracking` (linha única `site`) com `gtm_id`, `ga4_id`, `google_ads_id`, `meta_pixel_id` e `options`. Os formatos dos IDs e das opções são validados no cliente e no banco. Leitura pública (inclusive o conteúdo dos códigos), gravação só para admin ativo, sem exclusão. A versão numérica impede sobrescrever edição concorrente.
+- Integrações: IDs digitados ou extraídos de snippets oficiais sem executar o código no painel. Cada integração pode ser pausada sem perder seu ID. O ID do Pixel é público; tokens privados da API de Conversões não devem ser inseridos.
+- HTML personalizado: até 10 códigos, nomeados, de até 12.000 caracteres, com categoria Análise ou Marketing e ativação individual. Executam apenas após consentimento, em um iframe com origem isolada, sem acesso ao DOM, cookies ou sessão da página principal. Códigos que dependem desse acesso devem usar a integração oficial ou GTM. O documento isolado tem sua própria CSP; a CSP da loja e do painel continua estrita. Não inserir segredos.
+- Conversões do WhatsApp: `whatsapp_click` no GA4/GTM, `Contact` no Pixel e conversão no Ads quando há ID e rótulo da ação. Cada evento respeita sua categoria de consentimento. Clique não comprova mensagem enviada, lead ou venda.
 - Consentimento (RGPD/LGPD): `src/tracking/CookieConsent.jsx` mostra o aviso só quando há algum ID preenchido. Nada carrega antes da escolha. Google Consent Mode v2 começa com tudo `denied` e recebe `update` conforme a escolha (Análise → `analytics_storage`; Marketing → `ad_storage`, `ad_user_data`, `ad_personalization` e o Pixel). O GTM carrega com qualquer categoria aceita e recebe o evento `rj_consent_update` para usar em gatilhos. Ao retirar uma permissão já concedida, a página recarrega sem as tags. A escolha fica em `localStorage` (`rj-consent`), e o link “Preferências de cookies” no rodapé reabre o aviso.
 - A vitrine é uma página única, sem troca de rota. Por isso o `page_view` automático do carregamento basta, e não há disparo manual por rota. O `/admin` nunca carrega tags.
 - CSP (`vercel.json`): liberados só os domínios do Google (Tag Manager, Analytics, Ads) e da Meta, incluindo o modo de visualização do GTM. Continua sem `unsafe-inline`/`unsafe-eval`; por isso, tags de “HTML personalizado” e variáveis de JavaScript personalizado do GTM não funcionam. Se o cliente precisar delas, a CSP tem de ser revista.
@@ -95,9 +97,9 @@ npm run test:db
 npm run preview -- --port 4173
 ```
 
-`verify` roda testes de validação e build. `test:db` inicia um PostgreSQL temporário, sem rede TCP, executa migração e testes de permissões, e remove o banco ao terminar. Neste Mac utiliza `/opt/homebrew/opt/postgresql@18/bin`; em outra instalação forneça `PG_BIN=/caminho/bin npm run test:db`. Não usa banco remoto.
+`verify` roda os 19 testes de validação e o build. `test:db` executa as migrations e 5 testes de permissões em PostgreSQL temporário via PGlite, em memória, sem banco remoto. `test:db:postgres` mantém o roteiro original para um PostgreSQL instalado, com `PG_BIN` apontando para seus binários. `test:browser` usa Chrome/Edge e API simulada; cobre login, salvar/recarregar, erros, pausar, HTML, consentimento, revogação, conversões, isolamento e logout em 1440/390. As capturas e `resultado.json` ficam em `output/tracking/`.
 
-Na Vercel, usar um projeto RJ separado com preset Vite e as duas variáveis públicas. `vercel.json` inclui rotas SPA e cabeçalhos. Nenhum deploy ou vínculo Vercel foi criado por esta implementação. Um domínio Supabase personalizado requer ajuste do `connect-src` no CSP.
+Na Vercel, o projeto confirmado é `b57bdfd9-ac23-412d-b09d-1537e1beeca0` (`prj_m1s6gom7nRgTs8ncJJ0fCmsWvt0C`), da equipe `team_ncMJZtGdUvp9d9AiSCgWnPCg`, com preset Vite. Conferir as duas variáveis públicas antes de um novo build. `vercel.json` inclui rotas SPA e cabeçalhos; um domínio Supabase personalizado requer ajuste do `connect-src` no CSP. A ativação remota e a publicação desta atualização continuam pendentes.
 
 ### Segurança e operação
 
@@ -109,7 +111,15 @@ Os textos institucionais em branco direcionam para atendimento até serem preenc
 
 ### Reversão local
 
-O estado visual anterior permanece em `/tmp/rj-caixas-work`. As tabelas RJ são independentes do catálogo Originally. Para desligar a integração local, remova as variáveis públicas de `.env.local` e reinicie o servidor; a referência estática volta a ser usada. Isso não apaga dados remotos. Não remova tabelas ou arquivos do bucket sem backup e autorização.
+O estado recuperado antes da retomada permanece em `C:/Users/Altamir da Luz/Sites/rj-caixas-react`. A cópia de trabalho atual fica em `zed.codes/sites/rj-caixas-react`, na branch `feat-tracking-admin`. A conversa original, o patch e o manifesto SHA-256 foram preservados em `zed.codes/backups/rj-caixas-recuperacao-20261019-132825/`; os 344 arquivos de código e assets foram comparados antes das novas alterações. Para desligar a integração local, remova as variáveis públicas de `.env.local` e reinicie o servidor. Isso não apaga dados remotos.
+
+### Ponto de continuidade — 19/10/2026
+
+O responsável decidiu criar um e-mail para o cliente e usar novas contas de Vercel e Supabase sob controle dele. Aguardar esse endereço para provisionar e configurar o destino; não criar o projeto na organização Grupo W3 nem conectar a conta do cliente ao W3 Geral. O projeto Vercel antigo foi identificado apenas como origem da migração e continua sem variáveis de ambiente.
+
+A implementação local foi retomada após o fechamento do editor. Foram corrigidos o host/origem da API simulada e o seletor da aba com contagem no teste de navegador. Confirmados: 19 testes de lógica, 5 testes SQL em banco temporário, build e roteiro completo no Chrome em 1440/390, sem erros de JavaScript. Os serviços externos de anúncios foram simulados; autenticação e persistência em Supabase gerenciado, recebimento real de eventos e publicação continuam pendentes.
+
+Próxima etapa: acessar as contas novas do cliente, confirmar o projeto exclusivo e seu custo antes de criar, aplicar as três migrations, criar o administrador com perfil ativo, importar o conteúdo conferido da loja, configurar as variáveis públicas e testar em preview antes da migração de produção. Preservar a loja existente até a validação do novo destino.
 
 ### Resultado da validação do admin
 
